@@ -1,0 +1,7 @@
+name = Islandora Custom XSL Transforms
+description = Utility permits defining custom xml form transform file directories
+core = 7.x
+files[] = islandora_xslt_paths.module
+
+version = "7.x-1.x-dev"
+dependencies[] = xml_form_builder

@@ -1,0 +1,147 @@
+<?php
+
+/**
+ * Implements hook_xml_form_builder_get_transforms().
+ */
+function islandora_xslt_paths_xml_form_builder_get_transforms() {
+  // Return a list of the custom xslt transform files.
+  $return = _islandora_xslt_paths_xml_form_builder_get_transforms($self = FALSE);
+  if (count($return)) {
+    return $return;
+  }
+}
+
+/**
+ * Implements hook_xml_form_builder_get_self_transforms().
+ */
+function islandora_xslt_paths_xml_form_builder_get_self_transforms() {
+  // Return a list of the custom xslt self-transform files.
+  $return = _islandora_xslt_paths_xml_form_builder_get_transforms($self = TRUE);
+  if (count($return)) {
+    return $return;
+  }
+}
+
+/**
+ * Combined hook_xml_form_builder_get_transforms.
+ *
+ * @param bool $self
+ *   If true, treat as self transform
+ *
+ * @return array
+ *   A list of xslt transform file paths
+ */
+function _islandora_xslt_paths_xml_form_builder_get_transforms($self = FALSE) {
+  // Return a list of the custom xslt transform files.
+  $self = $self ? 'self_' : '';
+  $transform_files_path = variable_get('islandora_xslt_paths_' . $self . 'transform_xslt_file_path', FALSE);
+  $transform_files_path = rtrim($transform_files_path, '/');
+  if ($transform_files_path && is_readable($transform_files_path)) {
+    $return = array();
+    $scanned_directory = array_diff(scandir($transform_files_path), array('..', '.'));
+    if (count($scanned_directory)) {
+      foreach ($scanned_directory as $filename) {
+        $filepath = $transform_files_path . '/' . $filename;
+        if (is_readable($filepath)) {
+          $return[$filename] = $filepath;
+        }
+        else {
+          watchdog('notice', 'Could not read custom xslt ' . $self . 'transform file @file', array('@file' => $filepath));
+        }
+      }
+    }
+    if (count($return)) {
+      return $return;
+    }
+    else {
+      return FALSE;
+    }
+  }
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function islandora_xslt_paths_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'xml_form_builder_settings_form') {
+
+    $form['islandora_xslt_paths_transform_wrapper'] = array(
+      '#prefix' => '<div id="islandora_xslt_paths_self_transform_wrapper">',
+      '#suffix' => '</div>',
+    );
+    $form['islandora_xslt_paths_transform_wrapper']['islandora_xslt_paths_transform_xslt_file_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('System path to xsl transforms folder'),
+      '#name' => 'islandora_xslt_paths_transform_path_textfield',
+      '#description' => t('Enter the full system path to a folder where transform xslt files are located. (Note: If empty, the default folder will be islandora_xml_forms/builder/transforms. Placement of custom self_transform xslts in that default folder is discouraged since they will be lost when you upgrade the islandora_xml_forms module!)'),
+      '#default_value' => variable_get('islandora_xslt_paths_transform_xslt_file_path', ''),
+    );
+    $form['#submit'][] = 'islandora_xslt_paths_transform_admin_form_submit';
+    $form['#validate'][] = 'islandora_xslt_paths_transform_admin_form_validate';
+
+    $form['islandora_xslt_paths_self_transform_wrapper'] = array(
+      '#prefix' => '<div id="islandora_xslt_paths_self_transform_wrapper">',
+      '#suffix' => '</div>',
+    );
+    $form['islandora_xslt_paths_self_transform_wrapper']['islandora_xslt_paths_self_transform_xslt_file_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('System path to self-transforms folder'),
+      '#name' => 'islandora_xslt_paths_self_transform_path_textfield',
+      '#description' => t('Enter the full system path to a folder where self-transform xslt files are located. (Note: If empty, the default folder will be islandora_xml_forms/builder/self_transforms. Placement of custom self_transform xslts in that default folder is discouraged since they will be lost when you upgrade the islandora_xml_forms module!)'),
+      '#default_value' => variable_get('islandora_xslt_paths_self_transform_xslt_file_path', ''),
+    );
+    $form['#submit'][] = 'islandora_xslt_paths_self_transform_admin_form_submit';
+    $form['#validate'][] = 'islandora_xslt_paths_self_transform_admin_form_validate';
+  }
+}
+
+/**
+ * Form submit handler for xslt transforms path.
+ */
+function islandora_xslt_paths_transform_admin_form_submit($form, &$form_state) {
+  $value = $form_state['input']['islandora_xslt_paths_transform_path_textfield'];
+  variable_set('islandora_xslt_paths_transform_xslt_file_path', $value);
+  drupal_set_message(t('XSLT transforms path has been updated!'));
+}
+
+/**
+ * Form submit handler for xslt self-transforms path.
+ */
+function islandora_xslt_paths_self_transform_admin_form_submit($form, &$form_state) {
+  $value = $form_state['input']['islandora_xslt_paths_self_transform_path_textfield'];
+  variable_set('islandora_xslt_paths_self_transform_xslt_file_path', $value);
+  drupal_set_message(t('XSLT self-transforms path has been updated!'));
+}
+
+/**
+ * Form validate handler for xslt transforms path.
+ */
+function islandora_xslt_paths_transform_admin_form_validate($form, &$form_state) {
+  $path = $form_state['input']['islandora_xslt_paths_transform_path_textfield'];
+  if ($path) {
+    $pathinfo = pathinfo($path);
+    if (!empty($pathinfo['extension'])) {
+      form_set_error('islandora_xslt_paths_transform_path_textfield', t('Transform xslt files path must point to a directory, not to a file.'));
+    }
+    elseif (!is_readable($path)) {
+      form_set_error('islandora_xslt_paths_transform_path_textfield', t('Transform xslt files path does not exist or is not readable. Create the directory first, and ensure that it is readable by apache.'));
+    }
+  }
+}
+
+/**
+ * Form validate handler for xslt self-transforms path.
+ */
+function islandora_xslt_paths_self_transform_admin_form_validate($form, &$form_state) {
+  $path = $form_state['input']['islandora_xslt_paths_self_transform_path_textfield'];
+  if ($path) {
+    $pathinfo = pathinfo($path);
+    if (!empty($pathinfo['extension'])) {
+      form_set_error('islandora_xslt_paths_self_transform_path_textfield', t('Self transform xslt files path must point to a directory, not to a file.'));
+    }
+    elseif (!is_readable($path)) {
+      form_set_error('islandora_xslt_paths_self_transform_path_textfield', t('Self transform xslt files path does not exist or is not readable. Create the directory first, and ensure that it is readable by apache.'));
+    }
+  }
+}
