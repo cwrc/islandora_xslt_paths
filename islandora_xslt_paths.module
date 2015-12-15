@@ -43,7 +43,7 @@ function _islandora_xslt_paths_xml_form_builder_get_transforms($self = FALSE) {
       foreach ($scanned_directory as $filename) {
         $filepath = $transform_files_path . '/' . $filename;
         if (is_readable($filepath)) {
-          $return[$filename] = $filepath;
+          $return[$filepath] = $filepath;
         }
         else {
           watchdog('notice', 'Could not read custom xslt ' . $self . 'transform file @file', array('@file' => $filepath));
