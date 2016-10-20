@@ -26,25 +26,14 @@ First, create your custom locations for dc transform xslt files and/or self-tran
 Then go to /admin/islandora/xmlform/settings and enter either or both paths.
 The xsl files inside those folders will then become available on the form association configuration pages.
 
-## Troubleshooting/Issues
-
-Having problems or solved a problem? Check out the Islandora google groups for a solution.
-
-* [Islandora Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora)
-* [Islandora Dev Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora-dev)
 
 ## Maintainers/Sponsors
-Current maintainers:
 
-* [Pat Dunlavey](https://github.com/patdunlavey)
+Original code by:
 
-This project has been sponsored by:
+* [Pat Dunlavey](https://github.com/patdunlavey) and sponsored by : Williams College.
 
-* Williams College.
-
-## Development
-
-If you would like to contribute to this module, please check out our helpful [Documentation for Developers](https://github.com/Islandora/islandora/wiki#wiki-documentation-for-developers) info, as well as our [Developers](http://islandora.ca/developers) section on the Islandora.ca site.
+* extended by cwrc with a drush script to update dublin-core (DC) datastream with a custom XSLT - https://groups.google.com/d/msg/islandora/Ot6N0eIvPjc/48ttrqnHAQAJ
 
 ## License
 
