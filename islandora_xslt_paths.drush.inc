@@ -17,6 +17,7 @@ function islandora_xslt_paths_drush_command()
     'description' => 'Apply XSLT to a list of objects with a source and destination datastream',
     'examples' => array(
       'drush -u 1 islandora_xslt_paths_apply_xslt {XSLT_PATH} {DS_SRC} {DS_DEST} {list_of_pids}'
+      , 'drush -u 1  islandora_xslt_paths_apply_xslt sites/default/libraries/islandora_cwrc_xslt_library/xslt/mods_to_dc.xsl MODS DC /tmp/z'
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_MAX
   );
