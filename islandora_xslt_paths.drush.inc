@@ -65,19 +65,41 @@ function drush_islandora_xslt_paths_apply_xslt(
 
       drush_print("PID: [" . $pid . "]");
 
-      $object = islandora_object_load($pid);
+      try {
+        $object = islandora_object_load($pid);
+        
+        if ($object) {
+          $ds_src_obj = $object[$ds_src];
+          $ds_dest_obj = $object[$ds_dest];
 
-      $ds_src_obj = $object[$ds_src];
-      $ds_dest_obj = $object[$ds_dest];
+          if ($ds_src_obj && $ds_dest_obj) {
+            // if no source datastream then don't change destination datastream
+            $tmp_xml = $ds_src_obj->content;
 
-      $tmp_xml = $ds_src_obj->content;
+            $tmp_dom = new DOMDocument();
+            $tmp_dom->loadXML($tmp_xml);
+            $tmp_xml = $xslt_proc->transformToXML($tmp_dom);
 
-      $tmp_dom = new DOMDocument();
-      $tmp_dom->loadXML($tmp_xml);
-      $tmp_xml = $xslt_proc->transformToXML($tmp_dom);
-
-      $ds_dest_obj->setContentFromString($tmp_xml);
-      $object->ingestDatastream($ds_dest_obj);
+            $ds_dest_obj->setContentFromString($tmp_xml);
+            $object->ingestDatastream($ds_dest_obj);
+          }
+          else {
+            if (!$ds_dest_obj) {
+              drush_print("Missing dest datastream [".$ds_dest."] PID [".$pid."]");
+            }
+            if (!$ds_src_obj) {
+              drush_print("Missing src datastream [".$ds_src."] PID [".$pid."]");
+            }
+          }
+        }
+        else {
+          drush_print("Missing object PID [".$pid."]");
+        }
+      }
+      catch (Exception $exception) {
+        //watchdog_exception('islandora_cwrc_writer', $exception, 'Got an exception while searching.', array(), WATCHDOG_ERROR);
+        drush_print("Exception on PID [".$pid."]: " . $exception);
+      }
     }
     fclose($handle);
   }
